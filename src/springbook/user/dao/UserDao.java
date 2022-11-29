@@ -14,26 +14,18 @@ public class UserDao {
     
     private DataSource dataSource;
     
-    public void setJdbcContext(JdbcContext jdbcContext) {
-        this.jdbcContext = jdbcContext;
-    }
-
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
+        this.jdbcContext = new JdbcContext();
+        this.jdbcContext.setDataSource(dataSource);
     }
 
     public void add(final User user) throws SQLException {
-        jdbcContext.workWithStatementStrategy(new StatementStrategy() {
-            @Override
-            public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
-                PreparedStatement ps = c.prepareStatement("insert into users (id, name, password) values (?, ?, ?)");
-                ps.setString(1, user.getId());
-                ps.setString(2, user.getName());
-                ps.setString(3, user.getPassword());
-
-                return ps;
-            }
-        });
+        String query = "insert into users (id, name, password) values (?, ?, ?)"; 
+        String id = user.getId();
+        String name = user.getName();
+        String password = user.getPassword();
+        jdbcContext.executeSql(query, id, name, password);
     }
 
     public User get(String id) throws SQLException {
@@ -82,14 +74,9 @@ public class UserDao {
     }
     
     public void deleteAll() throws SQLException {
-        jdbcContext.workWithStatementStrategy(new StatementStrategy() {
-            @Override
-            public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
-                return c.prepareStatement("DELETE FROM users");
-            }
-        });
+        jdbcContext.executeSql("DELETE FROM users");
     }
-    
+
     public int getCount() throws SQLException {
         Connection c = dataSource.getConnection();
         

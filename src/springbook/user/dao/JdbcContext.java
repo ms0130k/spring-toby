@@ -37,4 +37,28 @@ public class JdbcContext {
             }
         }
     }
+    
+    public void executeSql(final String query) throws SQLException {
+        workWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+                return c.prepareStatement(query);
+            }
+        });
+    }
+    
+    public void executeSql(String query, String id, String name, String password) throws SQLException {
+        workWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+                PreparedStatement ps = c.prepareStatement(query);
+                ps.setString(1, id);
+                ps.setString(2, name);
+                ps.setString(3, password);
+
+                return ps;
+            }
+        });
+    }
+
 }
