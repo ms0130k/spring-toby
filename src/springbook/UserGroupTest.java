@@ -10,7 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import springbook.user.dao.UserDao;
+import springbook.user.dao.UserDaoJdbc;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/applicationContext.xml")
@@ -18,7 +18,7 @@ public class UserGroupTest {
     @Autowired
     ApplicationContext con;
     @Autowired
-    UserDao dao;
+    UserDaoJdbc dao;
 
     @Before
     public void setup() {
