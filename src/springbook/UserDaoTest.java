@@ -5,7 +5,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
 import java.sql.SQLException;
-import java.util.UUID;
 
 import javax.sql.DataSource;
 
