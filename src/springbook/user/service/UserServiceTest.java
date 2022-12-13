@@ -8,16 +8,21 @@ import static springbootk.user.domain.Level.BASIC;
 import static springbootk.user.domain.Level.GOLD;
 import static springbootk.user.domain.Level.SILVER;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import springbook.user.dao.UserDao;
 import springbootk.user.domain.Level;
@@ -30,12 +35,20 @@ public class UserServiceTest {
     UserService userService;
     @Autowired
     UserDao dao;
-    List<User> users;
+    @Qualifier("defaultUserLevelUpgradePolicy")
     @Autowired
     UserLevelUpgradePolicy userLevelUpgradePolicy;
+    @Autowired
+    DataSource dataSource;
+    @Autowired
+    PlatformTransactionManager transactionManager;
 
+    List<User> users;
+    
     @Before
     public void setup() {
+        dao.deleteAll();
+        
         users = Arrays.asList(
                 new User("aa", "123", "44", null, UserService.MIN_LOGIN_COUNT_FOR_SILVER - 1, 11),
                 new User("bb", "77", "123", BASIC, UserService.MIN_LOGIN_COUNT_FOR_SILVER, 10),
@@ -68,7 +81,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void upgradeLevels() {
+    public void upgradeLevels() throws Exception {
         userService.upgradeLevels();
         checkLevelUpgraded(users.get(0), false);
         checkLevelUpgraded(users.get(1), true);
@@ -106,11 +119,13 @@ public class UserServiceTest {
         
     }
     @Test
-    public void upgradeAllOrNothing() {
+    public void upgradeAllOrNothing() throws Exception {
         try {
             UserService testService = new TestUserService(users.get(3).getId());
             testService.setUserDao(dao);
+            testService.setDataSource(dataSource);
             testService.setUserLevelUpgradePolicy(userLevelUpgradePolicy);
+            testService.setTransactionManager(transactionManager);
             testService.upgradeLevels();
             fail("TestUserServiceException is expected");
         } catch (TestUserServiceException e) {
