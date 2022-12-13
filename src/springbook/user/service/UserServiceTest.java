@@ -3,8 +3,9 @@ package springbook.user.service;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static springbootk.user.domain.Level.GOLD;
+import static org.junit.Assert.fail;
 import static springbootk.user.domain.Level.BASIC;
+import static springbootk.user.domain.Level.GOLD;
 import static springbootk.user.domain.Level.SILVER;
 
 import java.util.Arrays;
@@ -30,6 +31,8 @@ public class UserServiceTest {
     @Autowired
     UserDao dao;
     List<User> users;
+    @Autowired
+    UserLevelUpgradePolicy userLevelUpgradePolicy;
 
     @Before
     public void setup() {
@@ -84,5 +87,37 @@ public class UserServiceTest {
     
     private void checkLevel(User user, Level level) {
         assertThat(user.getLevel(), is(level));
+    }
+    
+    static class TestUserService extends UserService {
+        private String id;
+        private TestUserService(String id) {
+            this.id = id;
+        }
+        
+        @Override
+        protected void upgradeLevel(User user) {
+            if (user.getId().equals(this.id)) throw new TestUserServiceException();
+            super.upgradeLevel(user);
+        }
+    }
+    
+    static class TestUserServiceException extends RuntimeException {
+        
+    }
+    @Test
+    public void upgradeAllOrNothing() {
+        try {
+            UserService testService = new TestUserService(users.get(3).getId());
+            testService.setUserDao(dao);
+            testService.setUserLevelUpgradePolicy(userLevelUpgradePolicy);
+            testService.upgradeLevels();
+            fail("TestUserServiceException is expected");
+        } catch (TestUserServiceException e) {
+        }
+        
+        for (User user : users) {
+            checkLevelUpgraded(user, false);
+        }
     }
 }

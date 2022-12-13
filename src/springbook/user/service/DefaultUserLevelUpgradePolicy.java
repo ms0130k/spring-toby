@@ -1,7 +1,6 @@
 package springbook.user.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import springbook.user.dao.UserDao;
 import springbootk.user.domain.Level;

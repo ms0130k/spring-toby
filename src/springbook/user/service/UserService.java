@@ -1,14 +1,12 @@
 package springbook.user.service;
 
+import static springbootk.user.domain.Level.BASIC;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import springbook.user.dao.UserDao;
-import static springbootk.user.domain.Level.*;
-
-import springbootk.user.domain.Level;
 import springbootk.user.domain.User;
 
 public class UserService {
@@ -16,44 +14,33 @@ public class UserService {
     public static final int MIN_RECOMMEND_FOR_GOLD = 30;
     
     @Autowired
-    private UserDao dao;
+    private UserDao userDao;
     
-//    @Qualifier("defaultUserLevelUpgradePolicy")
     @Autowired
-    private UserLevelUpgradePolicy levelUpgradePolicy;
+    private UserLevelUpgradePolicy userLevelUpgradePolicy;
+    
+    public void setUserDao(UserDao dao) {
+        this.userDao = dao;
+    }
+    
+    public void setUserLevelUpgradePolicy(UserLevelUpgradePolicy userLevelUpgradePolicy) {
+        this.userLevelUpgradePolicy = userLevelUpgradePolicy;
+    }
 
     public void add(User user) {
         if (user.getLevel() == null)
             user.setLevel(BASIC);
-        dao.add(user);
+        userDao.add(user);
     }
     
     public void upgradeLevels() {
-        List<User> users = dao.getAll();
+        List<User> users = userDao.getAll();
         for (User user : users) {
             upgradeLevel(user);
         }
     }
 
-    private void upgradeLevel(User user) {
-//        levelUpgradePolicy.upgrade(user);
-        if (canUpgradeLevel(user)) {
-            user.upgradeLevel();
-            dao.update(user);
-        }
-    }
-
-    private boolean canUpgradeLevel(User user) {
-        Level currentLevel = user.getLevel();
-        switch (currentLevel) {
-        case BASIC:
-            return user.getLogin() >= MIN_LOGIN_COUNT_FOR_SILVER;
-        case SILVER:
-            return user.getRecommend() >= MIN_RECOMMEND_FOR_GOLD;
-        case GOLD:
-            return false;
-        default:
-            throw new IllegalArgumentException("unkwon level: " + currentLevel);
-        }
+    protected void upgradeLevel(User user) {
+        userLevelUpgradePolicy.upgrade(user);
     }
 }
