@@ -50,11 +50,11 @@ public class UserServiceTest {
         dao.deleteAll();
         
         users = Arrays.asList(
-                new User("aa", "123", "44", null, UserService.MIN_LOGIN_COUNT_FOR_SILVER - 1, 11),
-                new User("bb", "77", "123", BASIC, UserService.MIN_LOGIN_COUNT_FOR_SILVER, 10),
-                new User("cc", "66", "22", SILVER, 99, UserService.MIN_RECOMMEND_FOR_GOLD - 1),
-                new User("dd", "55", "33", SILVER, 100, UserService.MIN_RECOMMEND_FOR_GOLD),
-                new User("ee", "44", "55", GOLD, 20, Integer.MAX_VALUE)
+                new User("aa", "123", "44", null, UserService.MIN_LOGIN_COUNT_FOR_SILVER - 1, 11, "ms0130k@naver.com"),
+                new User("bb", "77", "123", BASIC, UserService.MIN_LOGIN_COUNT_FOR_SILVER, 10, "ms0130k@naver.com"),
+                new User("cc", "66", "22", SILVER, 99, UserService.MIN_RECOMMEND_FOR_GOLD - 1, "ms0130k@naver.com"),
+                new User("dd", "55", "33", SILVER, 100, UserService.MIN_RECOMMEND_FOR_GOLD, "ms0130k@naver.com"),
+                new User("ee", "44", "55", GOLD, 20, Integer.MAX_VALUE, "ms0130k@naver.com")
         );
         for (User user : users) {
             userService.add(user);
@@ -134,5 +134,10 @@ public class UserServiceTest {
         for (User user : users) {
             checkLevelUpgraded(user, false);
         }
+    }
+    
+    @Test
+    public void sendEmail() {
+        userService.sendUpgradeEmail(User.builder().email("junghamoon@cj.net").level(GOLD).build());
     }
 }

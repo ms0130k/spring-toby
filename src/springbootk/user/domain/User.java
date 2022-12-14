@@ -9,22 +9,25 @@ import lombok.Setter;
 @Builder
 public class User {
     private String id;
-    private String name; 
+    private String name;
     private String password;
     private Level level;
     private int login;
     private int recommend;
-    
-    public User(String id, String name, String password, Level level, int login, int recommend) {
+    private String email;
+
+    public User() {
+    }
+
+    public User(String id, String name, String password, Level level, int login, int recommend, String email) {
+        super();
         this.id = id;
         this.name = name;
         this.password = password;
         this.level = level;
         this.login = login;
         this.recommend = recommend;
-    }
-
-    public User() {
+        this.email = email;
     }
 
     public void upgradeLevel() {
@@ -34,4 +37,5 @@ public class User {
         else
             this.level = nextLevel;
     }
+
 }
