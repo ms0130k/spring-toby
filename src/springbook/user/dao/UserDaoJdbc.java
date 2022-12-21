@@ -23,6 +23,7 @@ public class UserDaoJdbc implements UserDao {
                     .level(Level.valueOf(rs.getInt("level")))
                     .recommend(rs.getInt("recommend"))
                     .login(rs.getInt("login"))
+                    .email(rs.getString("email"))
                     .build();
         }
     };
@@ -33,7 +34,7 @@ public class UserDaoJdbc implements UserDao {
 
     public void add(final User user) throws DuplicateKeyException {
         try {
-            jdbcOperations.update("INSERT INTO users (id, name, password, level, recommend, login) VALUES (?, ?, ?, ?, ?, ?)", user.getId(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getRecommend(), user.getLogin());
+            jdbcOperations.update("INSERT INTO users (id, name, password, level, recommend, login, email) VALUES (?, ?, ?, ?, ?, ?, ?)", user.getId(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getRecommend(), user.getLogin(), user.getEmail());
         } catch (DuplicateKeyException e) {
             System.out.println("중복키 발생");
             throw e;

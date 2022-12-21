@@ -1,9 +1,8 @@
 package springbook.learningtest.template;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.junit.Before;

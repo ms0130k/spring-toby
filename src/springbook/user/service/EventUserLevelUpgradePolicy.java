@@ -27,13 +27,4 @@ public class EventUserLevelUpgradePolicy implements UserLevelUpgradePolicy {
             throw new IllegalArgumentException("unkwon level: " + currentLevel);
         }
     }
-
-    @Override
-    public void upgrade(User user) {
-        if (canUpgradeLevel(user)) {
-            user.upgradeLevel();
-            dao.update(user);
-        }
-    }
-
 }
