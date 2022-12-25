@@ -1,8 +1,13 @@
 package springbook.user.service;
 
+import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static springbootk.user.domain.Level.BASIC;
 import static springbootk.user.domain.Level.GOLD;
 import static springbootk.user.domain.Level.SILVER;
@@ -178,5 +183,21 @@ public class UserServiceTest {
             return 1;
         }
 
+    }
+    
+    @Test
+    public void mockUpgradeLevels() throws Exception {
+        UserServiceImpl userServiceImpl = new UserServiceImpl();
+        
+        UserDao mockUserDao = mock(UserDao.class);
+        when(mockUserDao.getAll()).thenReturn(this.users);
+        userServiceImpl.setUserDao(mockUserDao);
+        
+        MailSender mockMailSender = mock(MailSender.class);
+        userServiceImpl.setMailSender(mockMailSender);
+        
+        userServiceImpl.upgradeLevels();
+        
+        verify(mockUserDao, times(2)).update((User) any(User.class));
     }
 }
