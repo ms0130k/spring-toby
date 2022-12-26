@@ -12,6 +12,7 @@ import static springbootk.user.domain.Level.BASIC;
 import static springbootk.user.domain.Level.GOLD;
 import static springbootk.user.domain.Level.SILVER;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import springbook.proxy.TransactionHandler;
 import springbook.user.dao.UserDao;
 import springbootk.user.domain.Level;
 import springbootk.user.domain.User;
@@ -33,8 +35,7 @@ public class UserServiceTest {
     UserServiceImpl userServiceImpl = new UserServiceImpl();
     MockMailSender mailSender = new MockMailSender();
     List<User> users = Arrays.asList(
-            new User("aa", "123", "44", BASIC, UserServiceImpl.MIN_LOGIN_COUNT_FOR_SILVER - 1, 11,
-                    "ms0130k@naver.com"),
+            new User("aa", "123", "44", BASIC, UserServiceImpl.MIN_LOGIN_COUNT_FOR_SILVER - 1, 11, "ms0130k@naver.com"),
             new User("bb", "77", "123", BASIC, UserServiceImpl.MIN_LOGIN_COUNT_FOR_SILVER, 10, "ms0130k@naver.com"),
             new User("cc", "66", "22", SILVER, 99, UserServiceImpl.MIN_RECOMMEND_FOR_GOLD - 1, "ms0130k@naver.com"),
             new User("dd", "55", "33", SILVER, 100, UserServiceImpl.MIN_RECOMMEND_FOR_GOLD, "ms0130k@naver.com"),
@@ -57,7 +58,7 @@ public class UserServiceTest {
     @Test
     public void upgradeLevels() throws Exception {
         userServiceImpl.upgradeLevels();
-        
+
         List<User> updated = mockUserDao.getUpdated();
         assertThat(updated.size(), is(2));
         checkUserAndLevel(updated.get(0), "bb", Level.SILVER);
@@ -103,14 +104,15 @@ public class UserServiceTest {
     }
 
     @Test
-    public void upgradeAllOrNothing() throws Exception {
+    public void upgradejoinPointAllOrNothing() throws Exception {
         TestUserService testService = new TestUserService(users.get(3).getId());
         testService.setUserDao(mockUserDao);
         testService.setUserLevelUpgradePolicy(defaultUserLevelUpgradePolicy);
 
-        UserServiceTx userServiceTx = new UserServiceTx();
-        userServiceTx.setUserService(testService);
-        userServiceTx.setTransactionManager(platformTransactionManager);
+        TransactionHandler transactionHandler = new TransactionHandler(testService, platformTransactionManager,
+                "upgradeLevels");
+        UserService userServiceTx = (UserService) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { UserService.class }, transactionHandler);
+
         try {
             userServiceTx.upgradeLevels();
             fail("TestUserServiceException is expected");
@@ -184,20 +186,20 @@ public class UserServiceTest {
         }
 
     }
-    
+
     @Test
     public void mockUpgradeLevels() throws Exception {
         UserServiceImpl userServiceImpl = new UserServiceImpl();
-        
+
         UserDao mockUserDao = mock(UserDao.class);
         when(mockUserDao.getAll()).thenReturn(this.users);
         userServiceImpl.setUserDao(mockUserDao);
-        
+
         MailSender mockMailSender = mock(MailSender.class);
         userServiceImpl.setMailSender(mockMailSender);
-        
+
         userServiceImpl.upgradeLevels();
-        
+
         verify(mockUserDao, times(2)).update((User) any(User.class));
     }
 }
