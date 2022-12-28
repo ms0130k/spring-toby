@@ -3,15 +3,16 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
                 http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
-                
-    <bean id="connectionMaker" class="springbook.user.dao.NConnectionMaker"></bean>
-    <bean id="userDao" class="springbook.user.dao.UserDao">
+    <bean id="connectionMaker" class="springbook.user.dao.ConnectionMakerImpl"></bean>
+    
+    <bean id="userDao" class="springbook.user.dao.UserDaoJdbc">
         <property name="dataSource" ref="dataSource"></property>
     </bean>
+
     <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
         <property name="driverClass" value="org.postgresql.Driver"></property>
-        <property name="url" value="jdbc:postgresql://130.162.157.215:5432/testdb"></property>
+        <property name="url" value="jdbc:postgresql://130.162.157.215:5432/shock"></property>
         <property name="username" value="shock"></property>
         <property name="password" value="Kth973897G@#$"></property>
-    </bean>    
+    </bean>
 </beans>

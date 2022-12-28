@@ -4,62 +4,52 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.jdbc.core.JdbcOperations;
+import javax.sql.DataSource;
+
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-import springbootk.user.domain.Level;
-import springbootk.user.domain.User;
+import springbook.user.domain.User;
 
 public class UserDaoJdbc implements UserDao {
-    private JdbcOperations jdbcOperations;
+    private JdbcTemplate jdbcTemplate;
     private RowMapper<User> userMapper = new RowMapper<User>() {
         @Override
-        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public User mapRow(ResultSet rs, int i) throws SQLException {
             return User.builder()
                     .id(rs.getString("id"))
                     .name(rs.getString("name"))
                     .password(rs.getString("password"))
                     .level(Level.valueOf(rs.getInt("level")))
-                    .recommend(rs.getInt("recommend"))
                     .login(rs.getInt("login"))
-                    .email(rs.getString("email"))
+                    .recommend(rs.getInt("recommend"))
                     .build();
         }
     };
     
-    public void setJdbcOperations(JdbcOperations jdbcOperations) {
-        this.jdbcOperations = jdbcOperations;
+    public void setDataSource(DataSource dataSource) {
+        jdbcTemplate = new JdbcTemplate(dataSource);
     }
-
-    public void add(final User user) throws DuplicateKeyException {
-        try {
-            jdbcOperations.update("INSERT INTO users (id, name, password, level, recommend, login, email) VALUES (?, ?, ?, ?, ?, ?, ?)", user.getId(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getRecommend(), user.getLogin(), user.getEmail());
-        } catch (DuplicateKeyException e) {
-            System.out.println("중복키 발생");
-            throw e;
-        }
+    
+    public void add(User user) {
+        jdbcTemplate.update("INSERT INTO users (id, name, password, level, login, recommend) VALUES (?, ?, ?, ?, ?, ?)", user.getId(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend());
     }
-
+    
     public User get(String id) {
-        return jdbcOperations.queryForObject("SELECT * FROM users WHERE id = ?", new Object[] { id }, userMapper);
+        RowMapper<User> rowMapper = userMapper;
+        return jdbcTemplate.queryForObject("SELECT * FROM users WHERE id = ?", new Object[] { id }, rowMapper);
     }
     
     public void deleteAll() {
-        jdbcOperations.update("DELETE FROM users");
-    }
-
-    public int getCount() {
-        return jdbcOperations.queryForInt("SELECT count(*) FROM users");
+        jdbcTemplate.update("DELETE FROM users");
     }
     
-    public List<User> getAll() {
-        return jdbcOperations.query("SELECT * FROM users ORDER BY id", userMapper);
+    public int getCount() {
+        return jdbcTemplate.queryForInt("SELECT COUNT(*) FROM users");
     }
 
-    @Override
-    public int update(User user) {
-        return jdbcOperations.update("UPDATE users SET name = ?, level = ?, recommend = ?, login = ? WHERE id = ?" ,
-                user.getName(), user.getLevel().intValue(), user.getRecommend(), user.getLogin(), user.getId());
+    public List<User> getAll() {
+        RowMapper<User> rowMapper = userMapper;
+        return jdbcTemplate.query("SELECT * FROM users", rowMapper);
     }
 }
