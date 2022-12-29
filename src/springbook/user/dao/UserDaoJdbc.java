@@ -16,7 +16,7 @@ public class UserDaoJdbc implements UserDao {
     private RowMapper<User> userMapper = new RowMapper<User>() {
         @Override
         public User mapRow(ResultSet rs, int i) throws SQLException {
-            return new User(rs.getString("id"), rs.getString("name"), rs.getString("password"), Level.valueOf(rs.getInt("level")), rs.getInt("login"), rs.getInt("recommend"));
+            return new User(rs.getString("id"), rs.getString("name"), rs.getString("password"), Level.valueOf(rs.getInt("level")), rs.getInt("login"), rs.getInt("recommend"), rs.getString("email"));
         }
     };
     
@@ -25,7 +25,7 @@ public class UserDaoJdbc implements UserDao {
     }
     
     public void add(User user) {
-        jdbcTemplate.update("INSERT INTO users (id, name, password, level, login, recommend) VALUES (?, ?, ?, ?, ?, ?)", user.getId(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend());
+        jdbcTemplate.update("INSERT INTO users (id, name, password, level, login, recommend, email) VALUES (?, ?, ?, ?, ?, ?, ?)", user.getId(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getEmail());
     }
     
     public User get(String id) {
@@ -48,7 +48,7 @@ public class UserDaoJdbc implements UserDao {
 
     @Override
     public void update(User user) {
-        String sql = "UPDATE users SET name = ?, password = ?, level = ?, login = ?, recommend = ? WHERE id = ?";
-        jdbcTemplate.update(sql, user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getId());
+        String sql = "UPDATE users SET name = ?, password = ?, level = ?, login = ?, recommend = ?, email = ? WHERE id = ?";
+        jdbcTemplate.update(sql, user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getId(), user.getEmail());
     }
 }

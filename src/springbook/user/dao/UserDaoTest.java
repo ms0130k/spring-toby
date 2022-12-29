@@ -33,9 +33,9 @@ public class UserDaoTest {
     @Before
     public void setUp() {
         userDao.deleteAll();
-        user1 = new User("id1", "name1", "password1", SILVER, 1, 10);
-        user2 = new User("id2", "name2", "password2", GOLD, 1, 10);
-        user3 = new User("id3", "name3", "password3", BASIC, 1, 10);
+        user1 = new User("id1", "name1", "password1", SILVER, 1, 10, "test1@test.com");
+        user2 = new User("id2", "name2", "password2", GOLD, 1, 10, "test2@test.com");
+        user3 = new User("id3", "name3", "password3", BASIC, 1, 10, "test3@test.com");
     }
     
     @Test

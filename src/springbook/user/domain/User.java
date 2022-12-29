@@ -13,8 +13,9 @@ public class User {
     private Level level;
     private int login;
     private int recommend;
+    private String email;
     
-    public User(String id, String name, String password, Level level, int login, int recommend) {
+    public User(String id, String name, String password, Level level, int login, int recommend, String email) {
         super();
         this.id = id;
         this.name = name;
@@ -22,6 +23,7 @@ public class User {
         this.level = level;
         this.login = login;
         this.recommend = recommend;
+        this.email = email;
     }
     
     public void upgradeLevel() {
