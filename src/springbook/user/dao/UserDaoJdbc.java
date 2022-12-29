@@ -16,14 +16,7 @@ public class UserDaoJdbc implements UserDao {
     private RowMapper<User> userMapper = new RowMapper<User>() {
         @Override
         public User mapRow(ResultSet rs, int i) throws SQLException {
-            return User.builder()
-                    .id(rs.getString("id"))
-                    .name(rs.getString("name"))
-                    .password(rs.getString("password"))
-                    .level(Level.valueOf(rs.getInt("level")))
-                    .login(rs.getInt("login"))
-                    .recommend(rs.getInt("recommend"))
-                    .build();
+            return new User(rs.getString("id"), rs.getString("name"), rs.getString("password"), Level.valueOf(rs.getInt("level")), rs.getInt("login"), rs.getInt("recommend"));
         }
     };
     
@@ -51,5 +44,11 @@ public class UserDaoJdbc implements UserDao {
     public List<User> getAll() {
         RowMapper<User> rowMapper = userMapper;
         return jdbcTemplate.query("SELECT * FROM users", rowMapper);
+    }
+
+    @Override
+    public void update(User user) {
+        String sql = "UPDATE users SET name = ?, password = ?, level = ?, login = ?, recommend = ? WHERE id = ?";
+        jdbcTemplate.update(sql, user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getId());
     }
 }

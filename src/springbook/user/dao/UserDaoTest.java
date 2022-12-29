@@ -3,6 +3,9 @@ package springbook.user.dao;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static springbook.user.dao.Level.BASIC;
+import static springbook.user.dao.Level.GOLD;
+import static springbook.user.dao.Level.SILVER;
 
 import java.util.List;
 
@@ -14,7 +17,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import static springbook.user.dao.Level.*;
 
 import springbook.user.domain.User;
 
@@ -31,9 +33,9 @@ public class UserDaoTest {
     @Before
     public void setUp() {
         userDao.deleteAll();
-        user1 = User.builder().id("id1").name("name1").password("password1").level(SILVER).login(1).recommend(10).build();
-        user2 = User.builder().id("id2").name("name2").password("password2").level(GOLD).login(1).recommend(10).build();
-        user3 = User.builder().id("id3").name("name3").password("password3").level(BASIC).login(1).recommend(10).build();
+        user1 = new User("id1", "name1", "password1", SILVER, 1, 10);
+        user2 = new User("id2", "name2", "password2", GOLD, 1, 10);
+        user3 = new User("id3", "name3", "password3", BASIC, 1, 10);
     }
     
     @Test
@@ -101,5 +103,19 @@ public class UserDaoTest {
     @Test
     public void update() {
         userDao.add(user1);
+        userDao.add(user2);
+        
+        user1.setName("이름변경");
+        user1.setPassword("비번변경");
+        user1.setLevel(GOLD);
+        user1.setLogin(500);
+        user1.setRecommend(999);
+        userDao.update(user1);
+        
+        User updatedUser = userDao.get(user1.getId());
+        checkSameUser(user1, updatedUser);
+        
+        User sameUser = userDao.get(user2.getId());
+        checkSameUser(user2, sameUser);
     }
 }
