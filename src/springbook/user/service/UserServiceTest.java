@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -64,12 +65,15 @@ public class UserServiceTest {
     }
     
     @Test
+    @DirtiesContext
     public void upgradeLevels() throws Exception {
         userDao.deleteAll();
         for (User user : users) {
             userService.add(user);
         }
         
+        MockMailSender mockMailSender = new MockMailSender();
+        userService.setMailSender(mockMailSender);
         userService.upgradeLevels();
         
         checkLevel(users.get(0), false);
@@ -77,6 +81,11 @@ public class UserServiceTest {
         checkLevel(users.get(2), false);
         checkLevel(users.get(3), true);
         checkLevel(users.get(4), false);
+        
+        List<String> requests = mockMailSender.getRequests();
+        assertEquals(2, requests.size());
+        assertEquals(users.get(1).getEmail(), requests.get(0));
+        assertEquals(users.get(3).getEmail(), requests.get(1));
     }
 
     private void checkLevel(User user, boolean upgraded) {
