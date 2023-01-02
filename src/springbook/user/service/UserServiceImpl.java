@@ -6,9 +6,6 @@ import java.util.List;
 
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import springbook.user.dao.Level;
 import springbook.user.dao.UserDao;
@@ -18,15 +15,10 @@ public class UserServiceImpl implements UserService {
     public static final int MIN_RECCOMEND_FOR_GOLD = 30;
     public static final int MIN_LOGCOUNT_FOR_SILVER = 50;
     private UserDao userDao;
-    private PlatformTransactionManager transactionManager;
     private MailSender mailSender;
     
     public void setUserDao(UserDao userDao) {
         this.userDao = userDao;
-    }
-    
-    public void setTransactionManager(PlatformTransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
     }
     
     public void setMailSender(MailSender mailSender) {
@@ -34,19 +26,6 @@ public class UserServiceImpl implements UserService {
     }
     
     public void upgradeLevels() {
-        
-        TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
-        
-        try {
-            upgradeLevelsInternal();
-            transactionManager.commit(status);
-        } catch (Exception e) {
-            transactionManager.rollback(status);
-            throw e;
-        }
-    }
-
-    private void upgradeLevelsInternal() {
         List<User> users = userDao.getAll();
         for (User user : users) {
             if (canUpgradeLevel(user)) {

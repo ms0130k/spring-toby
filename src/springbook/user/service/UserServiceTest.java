@@ -5,8 +5,8 @@ import static org.junit.Assert.fail;
 import static springbook.user.dao.Level.BASIC;
 import static springbook.user.dao.Level.GOLD;
 import static springbook.user.dao.Level.SILVER;
-import static springbook.user.service.UserService.MIN_RECCOMEND_FOR_GOLD;
-import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
+import static springbook.user.service.UserServiceImpl.MIN_RECCOMEND_FOR_GOLD;
+import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailSender;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -29,6 +30,8 @@ import springbook.user.domain.User;
 @ContextConfiguration(locations = "/test-applicationContext.xml")
 public class UserServiceTest {
     @Autowired
+    UserServiceImpl userServiceImpl;
+    @Autowired
     UserService userService;
     @Autowired
     UserDao userDao;
@@ -36,6 +39,8 @@ public class UserServiceTest {
     DataSource dataSource;
     @Autowired
     PlatformTransactionManager transactionManager;
+    @Autowired
+    MailSender mailSender;
     
     List<User> users;
 
@@ -69,12 +74,12 @@ public class UserServiceTest {
     public void upgradeLevels() throws Exception {
         userDao.deleteAll();
         for (User user : users) {
-            userService.add(user);
+            userServiceImpl.add(user);
         }
         
         MockMailSender mockMailSender = new MockMailSender();
-        userService.setMailSender(mockMailSender);
-        userService.upgradeLevels();
+        userServiceImpl.setMailSender(mockMailSender);
+        userServiceImpl.upgradeLevels();
         
         checkLevel(users.get(0), false);
         checkLevel(users.get(1), true);
@@ -102,23 +107,27 @@ public class UserServiceTest {
     
     @Test
     public void upgradeAllOrNothing() throws Exception {
-        UserService testUserService = new TestUserService(users.get(3).getId());
+        TestUserService testUserService = new TestUserService(users.get(3).getId());
         testUserService.setUserDao(userDao);
-        testUserService.setTransactionManager(transactionManager);
+        testUserService.setMailSender(mailSender);
+        
+        UserServiceTx userServiceTx = new UserServiceTx();
+        userServiceTx.setUserService(testUserService);
+        userServiceTx.setTransactionManager(transactionManager);
         
         userDao.deleteAll();
         for (User user : users) {
-            userService.add(user);
+            userServiceTx.add(user);
         }
         try {
-            testUserService.upgradeLevels();
+            userServiceTx.upgradeLevels();
             fail("TestUserServiceException expected");
         } catch (TestUserServiceException e) {
         }
         checkLevel(users.get(1), false);
     }
     
-    static class TestUserService extends UserService {
+    static class TestUserService extends UserServiceImpl {
         private String id;
 
         public TestUserService(String id) {
