@@ -1,20 +1,17 @@
 package springbook.user.service;
 
-import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static springbook.user.dao.Level.BASIC;
 import static springbook.user.dao.Level.GOLD;
 import static springbook.user.dao.Level.SILVER;
 import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
 import static springbook.user.service.UserServiceImpl.MIN_RECCOMEND_FOR_GOLD;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,9 +36,9 @@ import springbook.user.domain.User;
 @ContextConfiguration(locations = "/test-applicationContext.xml")
 public class UserServiceTest {
     @Autowired
-    UserServiceImpl userServiceImpl;
-    @Autowired
     UserService userService;
+    @Autowired
+    UserService testUserService;
     @Autowired
     UserDao userDao;
     @Autowired
@@ -119,33 +116,22 @@ public class UserServiceTest {
     }
     
     @Test
+    @DirtiesContext
     public void upgradeAllOrNothing() throws Exception {
-        TestUserService testUserService = new TestUserService(users.get(3).getId());
-        testUserService.setUserDao(userDao);
-        testUserService.setMailSender(mailSender);
-        
-        UserServiceTx userServiceTx = new UserServiceTx();
-        userServiceTx.setUserService(testUserService);
-        userServiceTx.setTransactionManager(transactionManager);
-        
         userDao.deleteAll();
         for (User user : users) {
-            userServiceTx.add(user);
+            testUserService.add(user);
         }
         try {
-            userServiceTx.upgradeLevels();
+            testUserService.upgradeLevels();
             fail("TestUserServiceException expected");
         } catch (TestUserServiceException e) {
         }
         checkLevel(users.get(1), false);
     }
     
-    static class TestUserService extends UserServiceImpl {
-        private String id;
-
-        public TestUserService(String id) {
-            this.id = id;
-        }
+    static class TestUserServiceImpl extends UserServiceImpl {
+        private String id = "id4";
 
         @Override
         protected void upgradeLevel(User user) {
@@ -202,6 +188,15 @@ public class UserServiceTest {
             updated.add(user);
         }
         
+    }
+    
+    @Test
+    public void advisorAutoProxyCreator() {
+        assertThat(testUserService, is(Proxy.class));
+        assertTrue(testUserService instanceof Proxy);
+        
+        assertThat(testUserService, is(UserService.class));
+        assertTrue(testUserService instanceof UserService);
     }
     
     @Test
