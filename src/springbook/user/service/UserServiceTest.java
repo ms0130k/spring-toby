@@ -22,11 +22,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.mail.MailSender;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import springbook.user.dao.Level;
 import springbook.user.dao.UserDao;
@@ -130,6 +133,11 @@ public class UserServiceTest {
         checkLevel(users.get(1), false);
     }
     
+    @Test(expected = UncategorizedSQLException.class)
+    public void readOnlyTransactionAttribute() {
+        testUserService.getAll();
+    }
+    
     static class TestUserServiceImpl extends UserServiceImpl {
         private String id = "id4";
 
@@ -139,6 +147,14 @@ public class UserServiceTest {
                 throw new TestUserServiceException();
             }
             super.upgradeLevel(user);
+        }
+        
+        @Override
+        public List<User> getAll() {
+            for (User user : super.getAll()) {
+                super.update(user);
+            }
+            return null;
         }
     }
     
@@ -213,5 +229,22 @@ public class UserServiceTest {
 //        userServiceImpl.upgradeLevels();
         
 //        verify(mockUserDao, times(2)).update((User) any(User.class));
+    }
+    
+    @Test
+    public void transactionSync() {
+        userService.deleteAll();
+        assertThat(userDao.getCount(), is(0));
+        
+        DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
+        TransactionStatus txStatus = transactionManager.getTransaction(txDefinition);
+        
+        userService.add(users.get(0));
+        userService.add(users.get(1));
+        assertThat(userDao.getCount(), is(2));
+        
+        transactionManager.rollback(txStatus);
+        
+        assertThat(userDao.getCount(), is(0));
     }
 }
