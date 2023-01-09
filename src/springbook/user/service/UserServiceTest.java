@@ -25,12 +25,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.mail.MailSender;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import springbook.user.dao.Level;
 import springbook.user.dao.UserDao;
@@ -38,6 +37,7 @@ import springbook.user.domain.User;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/test-applicationContext.xml")
+@Transactional
 public class UserServiceTest {
     @Autowired
     UserService userService;
@@ -119,9 +119,7 @@ public class UserServiceTest {
     }
 
     @Test
-    @DirtiesContext
     public void upgradeAllOrNothing() throws Exception {
-        userDao.deleteAll();
         for (User user : users) {
             testUserService.add(user);
         }
@@ -130,12 +128,14 @@ public class UserServiceTest {
             fail("TestUserServiceException expected");
         } catch (TestUserServiceException e) {
         }
-        checkLevel(users.get(1), false);
+        checkLevel(users.get(1), true);
+        checkLevel(users.get(2), false);
     }
 
     @Test(expected = UncategorizedSQLException.class)
+    @Transactional(readOnly = true)
     public void readOnlyTransactionAttribute() {
-        testUserService.getAll();
+        userService.add(users.get(0));
     }
 
     static class TestUserServiceImpl extends UserServiceImpl {
@@ -232,9 +232,8 @@ public class UserServiceTest {
     }
 
     @Test
-    @Transactional
+    @Rollback
     public void transactionSync() {
-        userService.deleteAll();
         userService.add(users.get(0));
         userService.add(users.get(1));
     }

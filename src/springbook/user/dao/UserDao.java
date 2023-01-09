@@ -2,8 +2,6 @@ package springbook.user.dao;
 
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import springbook.user.domain.User;
 
 public interface UserDao {

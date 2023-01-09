@@ -14,6 +14,16 @@
     
     <bean id="userDao" class="springbook.user.dao.UserDaoJdbc">
         <property name="dataSource" ref="dataSource"></property>
+        <property name="sqlMap">
+            <map>
+                <entry key="add" value="INSERT INTO users (id, name, password, level, login, recommend, email) VALUES (?, ?, ?, ?, ?, ?, ?)"></entry>
+                <entry key="get" value="SELECT * FROM users where id = ?"></entry>
+                <entry key="getAll" value="SELECT * FROM users"></entry>
+                <entry key="getCount" value="SELECT COUNT(*) FROM users"></entry>
+                <entry key="update" value="UPDATE users SET name = ?, password = ?, level = ?, login = ?, recommend = ?, email = ? WHERE id = ?"></entry>
+                <entry key="deleteAll" value="DELETE FROM users"></entry>
+            </map>
+        </property>
     </bean>
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
