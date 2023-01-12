@@ -2,11 +2,14 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context"
     xmlns:tx="http://www.springframework.org/schema/tx"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
                 http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                 http://www.springframework.org/schema/aop
                 http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+                http://www.springframework.org/schema/context
+                http://www.springframework.org/schema/context/spring-context-3.0.xsd
                 http://www.springframework.org/schema/tx
                 http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
                 
@@ -14,16 +17,20 @@
     
     <bean id="userDao" class="springbook.user.dao.UserDaoJdbc">
         <property name="dataSource" ref="dataSource"></property>
-        <property name="sqlMap">
-            <map>
-                <entry key="add" value="INSERT INTO users (id, name, password, level, login, recommend, email) VALUES (?, ?, ?, ?, ?, ?, ?)"></entry>
-                <entry key="get" value="SELECT * FROM users where id = ?"></entry>
-                <entry key="getAll" value="SELECT * FROM users"></entry>
-                <entry key="getCount" value="SELECT COUNT(*) FROM users"></entry>
-                <entry key="update" value="UPDATE users SET name = ?, password = ?, level = ?, login = ?, recommend = ?, email = ? WHERE id = ?"></entry>
-                <entry key="deleteAll" value="DELETE FROM users"></entry>
-            </map>
-        </property>
+        <property name="sqlService" ref="sqlService"></property>
+    </bean>
+    
+    <!-- <bean id="sqlService" class="springbook.user.sqlservice.XmlSqlService">
+        <property name="sqlReader" ref="sqlReader"></property>
+        <property name="sqlRegistry" ref="sqlRegistry"></property>
+    </bean> -->
+    
+    <bean id="sqlService" class="springbook.user.sqlservice.DefaultSqlService"></bean>
+    
+    <bean id="sqlRegistry" class="springbook.user.sqlservice.HashMapSqlRegistry"></bean>
+    
+    <bean id="sqlReader" class="springbook.user.sqlservice.JaxbXmlSqlReader">
+        <property name="sqlMapFile" value="sqlmap.xml"></property>
     </bean>
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
@@ -54,14 +61,5 @@
     
     <tx:annotation-driven/>
     
-<!--     <aop:config>
-        <aop:advisor advice-ref="transactionAdvice" pointcut="bean(*Service)"/>
-    </aop:config>
-    
-    <tx:advice id="transactionAdvice">
-        <tx:attributes>
-            <tx:method name="get*" read-only="true"/>
-            <tx:method name="*"/>
-        </tx:attributes>
-    </tx:advice> -->
+    <context:annotation-config></context:annotation-config>
 </beans>

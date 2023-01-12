@@ -12,6 +12,9 @@ public class SqlRetrievalFailureException extends RuntimeException {
 
     public SqlRetrievalFailureException(String message) {
         super(message);
-        // TODO Auto-generated constructor stub
+    }
+    
+    public SqlRetrievalFailureException(Throwable cause) {
+        super(cause);
     }
 }
