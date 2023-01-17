@@ -2,6 +2,8 @@ package springbook.user.sqlservice;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.core.io.ResourceLoader;
+
 public class BaseSqlService implements SqlService {
     protected SqlReader sqlReader;
     protected SqlRegistry sqlRegistry;

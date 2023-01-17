@@ -30,12 +30,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
+import springbook.config.TestApplicationContext;
 import springbook.user.dao.Level;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.User;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "/test-applicationContext.xml")
+@ContextConfiguration(classes = TestApplicationContext.class)
 @Transactional
 public class UserServiceTest {
     @Autowired
@@ -119,6 +120,7 @@ public class UserServiceTest {
 
     @Test
     public void upgradeAllOrNothing() throws Exception {
+        userDao.deleteAll();
         for (User user : users) {
             testUserService.add(user);
         }
@@ -233,6 +235,7 @@ public class UserServiceTest {
     @Test
     @Rollback
     public void transactionSync() {
+        userDao.deleteAll();
         userService.add(users.get(0));
         userService.add(users.get(1));
     }

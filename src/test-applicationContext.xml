@@ -4,6 +4,7 @@
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:jdbc="http://www.springframework.org/schema/jdbc"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
                 http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                 http://www.springframework.org/schema/aop
@@ -11,7 +12,9 @@
                 http://www.springframework.org/schema/context
                 http://www.springframework.org/schema/context/spring-context-3.0.xsd
                 http://www.springframework.org/schema/tx
-                http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+                http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+                http://www.springframework.org/schema/jdbc
+                http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd">
                 
     <bean id="connectionMaker" class="springbook.user.dao.ConnectionMakerImpl"></bean>
     
@@ -25,21 +28,23 @@
         <property name="sqlRegistry" ref="sqlRegistry"></property>
     </bean> -->
     
-    <bean id="sqlService" class="springbook.user.sqlservice.DefaultSqlService"></bean>
+    <bean id="sqlService" class="springbook.user.sqlservice.OxmSqlService">
+        <property name="unmarshaller" ref="unmarshaller"></property>
+        <property name="sqlmap" value="classpath:springbook/user/dao/sqlmap.xml"></property>
+    </bean>
     
-    <bean id="sqlRegistry" class="springbook.user.sqlservice.HashMapSqlRegistry"></bean>
+    <bean id="unmarshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+        <property name="contextPath" value="springbook.user.sqlservice.jaxb"></property>
+    </bean>
+    
+    <bean id="sqlRegistry" class="springbook.issuetracker.sqlservice.updatable.EmbeddedDbSqlRegistry">
+        <property name="dataSource" ref="embeddedDatabase"></property>
+    </bean>
     
     <bean id="sqlReader" class="springbook.user.sqlservice.JaxbXmlSqlReader">
         <property name="sqlMapFile" value="sqlmap.xml"></property>
     </bean>
 
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
-        <property name="driverClass" value="org.postgresql.Driver"></property>
-        <property name="url" value="jdbc:postgresql://130.162.157.215:5432/shock"></property>
-        <property name="username" value="shock"></property>
-        <property name="password" value="Kth973897G@#$"></property>
-    </bean>
-    
     <bean id="userService" class="springbook.user.service.UserServiceImpl">
         <property name="userDao" ref="userDao"></property>
         <property name="mailSender" ref="mailSender"></property>
@@ -53,13 +58,13 @@
     
     <bean id="mailSender" class="springbook.user.service.DummyMailSender"></bean>
     
-    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="dataSource"></property>
-    </bean>
-    
     <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"></bean>
     
     <tx:annotation-driven/>
     
-    <context:annotation-config></context:annotation-config>
+    
+    <jdbc:embedded-database id="embeddedDatabase" type="HSQL">
+        <jdbc:script location="classpath:springbook/issuetracker/sqlservice/updatable/sqlRegistrySchema.txt"></jdbc:script>
+    </jdbc:embedded-database>
+    
 </beans>
