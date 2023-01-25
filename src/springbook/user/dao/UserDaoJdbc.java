@@ -6,12 +6,15 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
 import springbook.user.domain.User;
 import springbook.user.sqlservice.SqlService;
 
+@Repository
 public class UserDaoJdbc implements UserDao {
     private JdbcTemplate jdbcTemplate;
     private RowMapper<User> userMapper = new RowMapper<User>() {
@@ -20,12 +23,11 @@ public class UserDaoJdbc implements UserDao {
             return new User(rs.getString("id"), rs.getString("name"), rs.getString("password"), Level.valueOf(rs.getInt("level")), rs.getInt("login"), rs.getInt("recommend"), rs.getString("email"));
         }
     };
+    
+    @Autowired
     private SqlService sqlService;
     
-    public void setSqlService(SqlService sqlService) {
-        this.sqlService = sqlService;
-    }
-    
+    @Autowired
     public void setDataSource(DataSource dataSource) {
         jdbcTemplate = new JdbcTemplate(dataSource);
     }

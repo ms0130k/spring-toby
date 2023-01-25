@@ -72,5 +72,5 @@ public class JUnitTest {
         junitTest = this;
         testObjects.add(this);
     }
-    
+
 }

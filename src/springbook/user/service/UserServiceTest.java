@@ -25,18 +25,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.mail.MailSender;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
-import springbook.config.TestApplicationContext;
+import springbook.config.AppContext;
 import springbook.user.dao.Level;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.User;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = TestApplicationContext.class)
+@ContextConfiguration(classes = AppContext.class)
+@ActiveProfiles("test")
 @Transactional
 public class UserServiceTest {
     @Autowired
@@ -139,7 +141,7 @@ public class UserServiceTest {
         userService.add(users.get(0));
     }
 
-    static class TestUserServiceImpl extends UserServiceImpl {
+    public static class TestUserService extends UserServiceImpl {
         private String id = "id4";
 
         @Override
